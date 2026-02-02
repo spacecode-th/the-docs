@@ -11,6 +11,10 @@ const config = {
         source: '/docs/:path*.mdx',
         destination: '/llms.mdx/docs/:path*',
       },
+      {
+        source: '/docs/:path/assets/:bpmnslug.bpmn',
+        destination: '/bpmn/docs/:path/:bpmnslug',
+      },
     ];
   },
 };
