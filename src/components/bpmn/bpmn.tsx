@@ -52,7 +52,7 @@ const ReactBpmn: FC<ReactBpmnProps> = ({
     if (!url) return;
 
     onLoading?.();
-    
+
     fetch(url)
       .then((res) => res.text())
       .then(setDiagramXML)
