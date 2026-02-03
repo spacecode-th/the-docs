@@ -12,6 +12,7 @@
     "format": "biome format --write"
   },
   "dependencies": {
+    "@excalidraw/excalidraw": "^0.18.0",
     "bpmn-js": "^18.10.1",
     "fumadocs-core": "16.5.0",
     "fumadocs-mdx": "14.2.6",

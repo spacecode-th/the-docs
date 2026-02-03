@@ -15,6 +15,10 @@ const config = {
         source: '/docs/:path/assets/:bpmnslug.bpmn',
         destination: '/bpmn/docs/:path/:bpmnslug',
       },
+      {
+        source: '/docs/:path/assets/:excalidrawslug.excalidraw',
+        destination: '/excalidraw/docs/:path/:excalidrawslug',
+      },
     ];
   },
 };
