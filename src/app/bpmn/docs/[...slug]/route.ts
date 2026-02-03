@@ -7,11 +7,14 @@ export const revalidate = false;
 
 export async function GET(
   _req: Request,
-  { params }: RouteContext<'/bpmn/docs/[docslug]/[bpmnslug]'>,
+  { params }: RouteContext<'/bpmn/docs/[...slug]'>,
 ) {
-  const { docslug, bpmnslug } = await params;
+  const { slug } = await params;
 
-  const page = source.getPage([docslug]);
+  const bpmnslug = slug.at(-1);
+  const docSlug = slug.slice(0, -1);
+
+  const page = source.getPage(docSlug);
 
   if (!page || !page.absolutePath) notFound();
 

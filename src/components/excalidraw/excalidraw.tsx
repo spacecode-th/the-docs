@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { useParams } from 'next/navigation';
 
 interface ExcalidrawWrapperProps {
-  url?: string;
+  src?: string;
   ratio?: string;
   initialData?: any;
   onLoading?: () => void;
@@ -22,16 +22,16 @@ const Excalidraw = dynamic(
     type ExProps = React.ComponentProps<typeof ExcalidrawBase>;
 
     const ExComponent = (props: ExProps & ExcalidrawWrapperProps) => {
-      const { initialData, url, onLoading, onError, ratio, ...rest } = props;
+      const { initialData, src, onLoading, onError, ratio, ...rest } = props;
       const [fetchedData, setFetchedData] = useState<any>(null);
       const [isLoading, setIsLoading] = useState(false);
 
-      const params = useParams();
-      const slug = params.slug as string;
-      const dataUrl = `${slug}${url}`;
+      const { slug } = useParams();
 
       useEffect(() => {
-        if (!dataUrl) return;
+        if (!src || !slug || !Array.isArray(slug)) return;
+
+        const dataUrl = `/docs/${slug.join('/')}/${src}`;
 
         setIsLoading(true);
         onLoading?.();
@@ -41,7 +41,6 @@ const Excalidraw = dynamic(
             if (!res.ok) {
               throw new Error(`Failed to fetch: ${res.statusText}`);
             }
-            console.debug(res);
             return res.json();
           })
           .then((data) => {
@@ -53,7 +52,7 @@ const Excalidraw = dynamic(
             onError?.(err);
             setIsLoading(false);
           });
-      }, [dataUrl, onLoading, onError]);
+      }, [src, onLoading, onError]);
 
       const data = fetchedData ?? initialData;
 

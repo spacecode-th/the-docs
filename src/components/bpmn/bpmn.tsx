@@ -85,10 +85,13 @@ interface BpmnProps {
 }
 
 const Bpmn: FC<BpmnProps> = ({ src, ratio }) => {
-  const params = useParams();
-  const slug = params.slug as string;
+  const { slug } = useParams();
 
-  return <ReactBpmn url={`${slug}${src}`} ratio={ratio} />;
+  if (!slug || !Array.isArray(slug)) {
+    return <div>Invalid slug parameter</div>;
+  }
+
+  return <ReactBpmn url={`/docs/${slug.join('/')}/${src}`} ratio={ratio} />;
 };
 
 export { Bpmn };

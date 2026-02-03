@@ -12,12 +12,12 @@ const config = {
         destination: '/llms.mdx/docs/:path*',
       },
       {
-        source: '/docs/:path/assets/:bpmnslug.bpmn',
-        destination: '/bpmn/docs/:path/:bpmnslug',
+        source: '/docs/:path*/assets/:bpmnslug.bpmn',
+        destination: '/bpmn/docs/:path*/:bpmnslug',
       },
       {
-        source: '/docs/:path/assets/:excalidrawslug.excalidraw',
-        destination: '/excalidraw/docs/:path/:excalidrawslug',
+        source: '/docs/:path*/assets/:excalidrawslug.excalidraw',
+        destination: '/excalidraw/docs/:path*/:excalidrawslug',
       },
     ];
   },
