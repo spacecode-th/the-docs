@@ -2,6 +2,7 @@ import { source, generateAssetsStaticParams } from '@/lib/source';
 import { notFound } from 'next/navigation';
 import fs from 'fs';
 import path from 'path';
+import { bpmnToPng } from '@/lib/bpmn-to-png';
 
 export const revalidate = false;
 
@@ -20,6 +21,13 @@ export async function GET(
 
   const docPath = path.dirname(page.absolutePath);
   const bpmnPath = path.join(docPath, 'assets', `${bpmnslug}.bpmn`);
+
+  if (bpmnslug === "testing.jpeg") {
+    const a = await bpmnToPng();
+    return a;
+  }
+
+  if (!fs.existsSync(bpmnPath)) notFound();
 
   const markdownContent = fs.readFileSync(bpmnPath, 'utf8');
 
