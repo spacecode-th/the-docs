@@ -4,6 +4,8 @@ import fs from 'fs';
 import path from 'path';
 import { bpmnToPng } from '@/lib/bpmn-to-png';
 
+import puppeteer from 'puppeteer';
+
 export const revalidate = false;
 
 export async function GET(
@@ -22,20 +24,47 @@ export async function GET(
   const docPath = path.dirname(page.absolutePath);
   const bpmnPath = path.join(docPath, 'assets', `${bpmnslug}.bpmn`);
 
-  if (bpmnslug === "testing.jpeg") {
-    const a = await bpmnToPng();
-    return a;
-  }
 
   if (!fs.existsSync(bpmnPath)) notFound();
 
+  console.debug(bpmnPath)
+
   const markdownContent = fs.readFileSync(bpmnPath, 'utf8');
 
-  return new Response(markdownContent, {
-    headers: {
-      'Content-Type': 'application/xml',
-    },
-  });
+  console.debug(page.absolutePath)
+  console.debug(markdownContent)
+
+  const a = await bpmnToPng();
+  return a;
+
+  // if (!fs.existsSync(bpmnPath)) notFound();
+
+  // const markdownContent = fs.readFileSync(bpmnPath, 'utf8');
+
+  // return new Response(markdownContent, {
+  //   headers: {
+  //     'Content-Type': 'application/xml',
+  //   },
+  // });
+
+
+  // const bpmnslug = slug.at(-1);
+  // const docSlug = slug.slice(0, -1);
+
+  // const page = source.getPage(docSlug);
+
+  // if (!page || !page.absolutePath) notFound();
+
+  // const docPath = path.dirname(page.absolutePath);
+  // const bpmnPath = path.join(docPath, 'assets', `${bpmnslug}.bpmn`);
+
+  // const markdownContent = fs.readFileSync(bpmnPath, 'utf8');
+
+  // return new Response(markdownContent, {
+  //   headers: {
+  //     'Content-Type': 'application/xml',
+  //   },
+  // });
 }
 
 export function generateStaticParams() {

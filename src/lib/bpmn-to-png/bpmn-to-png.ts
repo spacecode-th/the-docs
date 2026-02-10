@@ -1,16 +1,12 @@
-import puppeteer, { type Page } from "puppeteer-core";
-import chromium from "@sparticuz/chromium";
+import puppeteer, { type Page } from "puppeteer";
 
 import {
   basename,
 } from 'node:path';
 
-import {
-  readFileSync,
-  writeFileSync
-} from 'node:fs';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from "node:url";
 
 
 type OutputPath = string;
@@ -60,68 +56,120 @@ declare function toSVG(): string;
 async function printDiagram(page: Page, options: PrintDiagramOptions): Promise<void> {
   const { input, outputs, minDimensions, footer, title = true, deviceScaleFactor } = options;
 
-  const diagramXML = readFileSync(input, "utf8");
+  console.log("cwd:", process.cwd());
+  console.log("__dirname:", __dirname);
+  console.log("exists:", fs.existsSync("/workspaces/compose/the-docs/content/docs/(main)/bpmn-testing/assets/testing.bpmn"));
 
-  const diagramTitle: string | false =
-    title === false ? false : typeof title === "string" ? (title.length ? title : basename(input)) : basename(input);
+  const diagramXML = fs.readFileSync('content/docs/(main)/bpmn-testing/assets/testing.bpmn', "utf8");
 
-  await page.goto(new URL("./skeleton.html", import.meta.url).toString());
-
-  // Node ESM: resolve viewer script file/url
-  // (kept as-is from your original; make sure your runtime supports import.meta.resolve)
-  const viewerScript = (import.meta as any).resolve?.(
-    "bpmn-js/dist/bpmn-viewer.production.min.js"
-  ) as string;
-
-  const desiredViewport = await page.evaluate(
-    async (xml, evalOptions) => {
-      const { viewerScript: vs, ...openOptions } = evalOptions;
-      await loadScript(vs);
-      return openDiagram(xml, openOptions);
-    },
-    diagramXML,
-    {
-      minDimensions,
-      title: diagramTitle,
-      viewerScript,
-      footer,
-    }
+  const url = new URL(
+    "bpmn-js/dist/bpmn-viewer.production.min.js",
+    import.meta.url
   );
 
-  await page.setViewport({
-    width: Math.round(desiredViewport.width),
-    height: Math.round(desiredViewport.height),
-    deviceScaleFactor,
+  // Convert file:// URL -> absolute path
+  const path = fileURLToPath(url);
+
+  // Read file contents as text
+  const viewerScriptText = fs.readFileSync(path, "utf8");
+
+  console.log(viewerScriptText);
+
+  const htmlString = `
+    <!DOCTYPE html>
+    <html>
+    <body>
+      <h1>Hello, World!</h1>
+      <p id="dynamic-content">This content will change.</p>
+      <script>
+        document.getElementById('dynamic-content').textContent = 'Content has been rendered by JS!';
+      </script>
+    </body>
+    </html>
+  `;
+
+  await page.setContent(htmlString, { waitUntil: 'networkidle0' });
+
+  // Navigate the page to a URL.
+  // await page.goto('https://developer.chrome.com/');
+
+  // Set screen size.
+  await page.setViewport({ width: 1080, height: 1024 });
+
+  await page.screenshot({
+    path: "/tmp/diagram.png",
+    clip: {
+      x: 0,
+      y: 0,
+      width: 1080,
+      height: 1024,
+    },
   });
 
-  await page.evaluate(() => resize());
 
-  for (const output of outputs) {
-    console.log(`writing ${output}`);
+  // await browser.close();
 
-    if (output.endsWith(".pdf")) {
-      await page.pdf({
-        path: output,
-        width: desiredViewport.width,
-        height: desiredViewport.diagramHeight,
-      });
-    } else if (output.endsWith(".png")) {
-      await page.screenshot({
-        path: output,
-        clip: {
-          x: 0,
-          y: 0,
-          width: desiredViewport.width,
-          height: desiredViewport.diagramHeight,
-        },
-      });
-    } else if (output.endsWith(".svg")) {
-      const svg = await page.evaluate(() => toSVG());
-      writeFileSync(output, svg, "utf8");
-    } else {
-      console.error(`Unknown output file format: ${output}`);
-    }
-  }
+
+  // const diagramTitle: string | false =
+  //   title === false ? false : typeof title === "string" ? (title.length ? title : basename(input)) : basename(input);
+
+  // await page.goto(new URL("./skeleton.html", import.meta.url).toString());
+
+  // // Node ESM: resolve viewer script file/url
+  // // (kept as-is from your original; make sure your runtime supports import.meta.resolve)
+  // const viewerScript = (import.meta as any).resolve?.(
+  //   "bpmn-js/dist/bpmn-viewer.production.min.js"
+  // ) as string;
+
+  // const desiredViewport = await page.evaluate(
+  //   async (xml, evalOptions) => {
+  //     const { viewerScript: vs, ...openOptions } = evalOptions;
+  //     await loadScript(vs);
+  //     return openDiagram(xml, openOptions);
+  //   },
+  //   diagramXML,
+  //   {
+  //     minDimensions,
+  //     title: diagramTitle,
+  //     viewerScript,
+  //     footer,
+  //   }
+  // );
+
+  // await page.setViewport({
+  //   width: Math.round(desiredViewport.width),
+  //   height: Math.round(desiredViewport.height),
+  //   deviceScaleFactor,
+  // });
+
+  // await page.evaluate(() => resize());
+
+  // for (const output of outputs) {
+  //   console.log(`writing ${ output }`);
+
+  //   if (output.endsWith(".pdf")) {
+  //     await page.pdf({
+  //       path: output,
+  //       width: desiredViewport.width,
+  //       height: desiredViewport.diagramHeight,
+  //     });
+  //   } else if (output.endsWith(".png")) {
+  //     await page.screenshot({
+  //       path: output,
+  //       clip: {
+  //         x: 0,
+  //         y: 0,
+  //         width: desiredViewport.width,
+  //         height: desiredViewport.diagramHeight,
+  //       },
+  //     });
+  //   } else if (output.endsWith(".svg")) {
+  //     const svg = await page.evaluate(() => toSVG());
+  //     fs.writeFileSync(output, svg, "utf8");
+  //   } else {
+  //     console.error(`Unknown output file format: ${ output } `);
+  //   }
+  // }
 }
 
 async function withPage(fn: (page: Page) => Promise<void>): Promise<void> {
@@ -129,9 +177,11 @@ async function withPage(fn: (page: Page) => Promise<void>): Promise<void> {
 
   try {
     browser = await puppeteer.launch({
-  args: chromium.args,
-  executablePath: await chromium.executablePath(),
-  headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        // other args
+      ],
     });
     const page = await browser.newPage();
     await fn(page);
