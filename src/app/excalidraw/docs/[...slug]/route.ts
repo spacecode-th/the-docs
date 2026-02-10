@@ -30,6 +30,7 @@ export async function GET(
   });
 }
 
-export function generateStaticParams() {
-  return source.generateParams();
-}
+// To implement, this is our custom function, fumadocs won't have utility for it
+// export function generateStaticParams() {
+//   return source.generateParams();
+// }
