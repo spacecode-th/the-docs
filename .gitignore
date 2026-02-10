@@ -1,5 +1,6 @@
 # deps
 /node_modules
+/.pnpm-store
 
 # generated content
 .source
@@ -17,8 +18,6 @@
 /.pnp
 .pnp.js
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
 # others
 .env*.local
