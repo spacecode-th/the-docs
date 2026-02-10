@@ -1,4 +1,4 @@
-import { source } from '@/lib/source';
+import { source, generateAssetsStaticParams } from '@/lib/source';
 import { notFound } from 'next/navigation';
 import fs from 'fs';
 import path from 'path';
@@ -30,7 +30,6 @@ export async function GET(
   });
 }
 
-// To implement, this is our custom function, fumadocs won't have utility for it
-// export function generateStaticParams() {
-//   return source.generateParams();
-// }
+export function generateStaticParams() {
+  return generateAssetsStaticParams('.bpmn');
+}

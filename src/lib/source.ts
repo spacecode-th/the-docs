@@ -1,6 +1,8 @@
 import { docs } from 'fumadocs-mdx:collections/server';
 import { type InferPageType, loader } from 'fumadocs-core/source';
 import { lucideIconsPlugin } from 'fumadocs-core/source/lucide-icons';
+import fs from 'fs';
+import path from 'path';
 import * as PageTree from 'fumadocs-core/page-tree';
 
 // See https://fumadocs.dev/docs/headless/source-api for more info
@@ -45,6 +47,74 @@ function convertEmptyFoldersInTree(root: PageTree.Root): PageTree.Root {
       fallback: convertEmptyFoldersInTree(root.fallback),
     }),
   };
+}
+
+/**
+ * Generate static params for asset files that live inside each doc's `assets/` folder.
+ *
+ * It scans all pages returned by `source.generateParams()`, resolves the
+ * page directory, then looks for files matching the provided extension.
+ *
+ * Only assets that actually exist will be returned.
+ *
+ * ---
+ * Route shape supported:
+ * `/bpmn/docs/[...slug]`
+ *
+ * Returned params look like:
+ * `{ slug: [...docSlug, assetBasename] }`
+ *
+ * Example:
+ * docs/
+ *   my-doc.mdx
+ *   assets/
+ *     flow.bpmn
+ *
+ * Output:
+ * `{ slug: ['my-doc', 'flow'] }`
+ *
+ * ---
+ * @param ext File extension to match.
+ * Must include the leading dot (e.g. ".bpmn", ".xml", ".json").
+ *
+ * @returns Array of static params usable in Next.js `generateStaticParams`.
+ *
+ * @example
+ * // Generate params for BPMN diagrams
+ * generateAssetsStaticParams('.bpmn')
+ *
+ * @example
+ * // Inside a route file
+ * export function generateStaticParams() {
+ *   return generateAssetsStaticParams('.bpmn');
+ * }
+ */
+export function generateAssetsStaticParams(ext: string) {
+  const params = source.generateParams();
+  const result: { slug: string[] }[] = [];
+
+  for (const { slug } of params) {
+    const page = source.getPage(slug);
+    if (!page?.absolutePath) continue;
+
+    const docDir = path.dirname(page.absolutePath);
+    const assetsDir = path.join(docDir, 'assets');
+
+    if (!fs.existsSync(assetsDir)) continue;
+    const stat = fs.statSync(assetsDir);
+    if (!stat.isDirectory()) continue;
+
+    const files = fs.readdirSync(assetsDir);
+
+    for (const file of files) {
+      if (!file.endsWith(ext)) continue;
+
+      const base = path.basename(file, path.extname(file));
+      result.push({ slug: [...slug, base] });
+    }
+  }
+
+  return result;
 }
 
 export function getPageTree() {
